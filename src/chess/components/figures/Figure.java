@@ -5,6 +5,7 @@ import java.util.List;
 import application.GameManager;
 import chess.components.Cell;
 import chess.components.Move;
+import chess.components.PlayerManager;
 import javafx.event.EventHandler;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -65,33 +66,18 @@ public abstract class Figure extends ImageView{
 	public abstract List<Move> nextMoves(int current_l, int current_n);
 	
 	public void select(){
-		Cell c = (Cell)this.getParent();
-		tempMoves = this.nextMoves(GridPane.getColumnIndex(c), 
-									GridPane.getRowIndex(c));
-		/*****************************************************************/
-		// protect their own king 
-		
-		King k = GameManager.getInstance().getKing(this.color);
-		Cell k_cell = (Cell)k.getParent();
-		
-		int k_l = GridPane.getColumnIndex(k_cell);
-		int k_n = GridPane.getRowIndex(k_cell);
-		
-		for(Figure f : GameManager.getInstance().getAllFigures()){
-			if(!f.getColor().equals(this.color)
-					&& (f instanceof Rook
-							|| f instanceof Bishop
-							|| f instanceof Queen)){
-				
-			}
+		if(!PlayerManager.getInstance().isTimeStarted())
+			PlayerManager.getInstance().startTime();
+
+		if(this.getColor().equals(PlayerManager.getInstance().getCurrentPlayerColor())) {
+			Cell c = (Cell) this.getParent();
+			tempMoves = this.nextMoves(GridPane.getColumnIndex(c),
+					GridPane.getRowIndex(c));
+			c.makeAvailable();
+			GameManager.getInstance().showAvailableMoves(tempMoves);
+			GameManager.getInstance().setSelectedFigure(this);
+			isSelected = true;
 		}
-		
-		
-		/*****************************************************************/
-		c.makeAvailable();
-		GameManager.getInstance().showAvailableMoves(tempMoves);
-		GameManager.getInstance().setSelectedFigure(this);
-		isSelected = true;
 	}
 	
 	public void diselect(){
@@ -102,5 +88,9 @@ public abstract class Figure extends ImageView{
 		GameManager.getInstance().setSelectedFigure(null);
 		this.tempMoves = null;
 		isSelected = false;
+	}
+
+	public List<Move> getTempMoves() {
+		return tempMoves;
 	}
 }
