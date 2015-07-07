@@ -4,20 +4,64 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import chess.components.Cell;
+import chess.components.IObserver;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
-public class MainController implements Initializable{
-	
+public class MainController implements Initializable, IObserver{
+
+	@FXML
+	private MenuItem closeItem;
+
+	@FXML
+	private MenuItem newComputerGameItem;
+
+	@FXML
+	private TextArea outputTextAra;
+
 	@FXML
 	private GridPane gridBoard;
+
+	@FXML
+	private MenuItem newHumanGameItem;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
 		// initialize singleton GameManager---------------------------------------
 		GameManager.getInstance().setBoard(gridBoard);
+
+
+		//initialize menu item----------------------------------------------
+		closeItem.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				((Stage) gridBoard.getScene().getWindow()).close();
+			}
+		});
+
+		final IObserver iObserver = this;
+		newHumanGameItem.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				GameManager.getInstance().endGame();
+				outputTextAra.setText("");
+				GameManager.getInstance().newGame(iObserver);
+			}
+		});
+
+		newComputerGameItem.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				//TODO: chess engine connect;
+			}
+		});
 		
 		// paint the board --------------------------------------------------
 		for(int i = 0; i < 8; i++)
@@ -64,6 +108,14 @@ public class MainController implements Initializable{
 			}
 		
 		// for test
-		GameManager.getInstance().newGame();
+		GameManager.getInstance().newGame(this);
 	}
+
+    @Override
+    public void update(String message) {
+        if(outputTextAra.getText().isEmpty())
+            outputTextAra.setText(message);
+        else
+            outputTextAra.setText(outputTextAra.getText() + "\n" + message);
+    }
 }
