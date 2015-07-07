@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import chess.components.Cell;
+import chess.components.IObserver;
 import chess.components.Move;
+import chess.components.PlayerManager;
 import chess.components.figures.Bishop;
 import chess.components.figures.Figure;
 import chess.components.figures.King;
@@ -54,27 +56,11 @@ public class GameManager {
 	}
 	
 	public boolean isCellFree(int l, int n){
-		Cell c = null;
-		// find cell on the grid
-		for (Node node : board.getChildren()) {
-			
-		    if (GridPane.getColumnIndex(node) == l && GridPane.getRowIndex(node) == n) {
-		    	c = (Cell)node;
-		    	break;
-		    }
-		}
+		Cell c = getCell(l, n);
 		return !c.hasFigure();
 	}
 	public boolean canCellBeCaptured(int l, int n, String color){
-		Cell c = null;
-		// find cell on the grid
-		for (Node node : board.getChildren()) {
-			
-		    if (GridPane.getColumnIndex(node) == l && GridPane.getRowIndex(node) == n) {
-		    	c = (Cell)node;
-		    	break;
-		    }
-		}
+		Cell c = getCell(l, n);
 
 		if(c.hasFigure() && !(c.getFigure().getColor().equals(color)))
 			return true;
@@ -96,9 +82,8 @@ public class GameManager {
 	}
 	
 	// Game methods ------------------------------------------------------
-	
-	//TODO: analyze check, mate
-	public void newGame(){
+
+	public void newGame(IObserver observer){
 		
 		clearBoard();
 		
@@ -191,6 +176,20 @@ public class GameManager {
 		f = new Queen("black");
 		this.allFigures.add(f);
 		c.getChildren().add(f);
+
+		//attach observer
+		for(Node n : board.getChildren()){
+			c = (Cell)n;
+			c.attachObserver(observer);
+			c.attachObserver(PlayerManager.getInstance());
+		}
+	}
+
+
+	public void endGame(){
+		selectedFigure = null;
+		allFigures.clear();
+		clearBoard();
 	}
 	
 	public void clearBoard(){
@@ -200,6 +199,53 @@ public class GameManager {
 		}
 			
 	}
+
+    //-------------------------------------------------------------
+	//if left Rook change position then castling is impossible
+	public boolean isLeftRookStand(int king_l, int king_n){
+		Rook leftRook = getLeftRook(king_l, king_n);
+		if(leftRook != null && leftRook.isStartPos())
+			return true;
+		else
+			return false;
+	}
+	//if right Rook change position then castling is impossible
+	public boolean isRightRookStand(int king_l, int king_n){
+		Rook rightRook = getRightRook(king_l, king_n);
+        if(rightRook != null && rightRook.isStartPos())
+            return true;
+        else
+            return false;
+	}
+
+    public Rook getLeftRook(int king_l, int king_n){
+        Cell cell = getCell(king_l - 3, king_n);
+        if(cell.hasFigure() && cell.getFigure() instanceof Rook)
+            return (Rook)cell.getFigure();
+        else
+            return null;
+    }
+
+    public Rook getRightRook(int king_l, int king_n){
+        Cell cell = getCell(king_l + 4, king_n);
+        if(cell.hasFigure() && cell.getFigure() instanceof Rook)
+            return (Rook)cell.getFigure();
+        else
+            return null;
+    }
+
+    public Cell getCell(int l, int n){
+        Cell cell = null;
+        for (Node node : board.getChildren()) {
+            if (GridPane.getColumnIndex(node) == l && GridPane.getRowIndex(node) == n) {
+                cell = (Cell)node;
+                break;
+            }
+        }
+        return cell;
+    }
+
+    //---------------------------------------------------------
 	
 	public King getKing(String color){
 		for(Figure f : this.allFigures){
@@ -208,4 +254,105 @@ public class GameManager {
 		}
 		return null;
 	}
+
+	public boolean isKingUnderAttack(String color){
+        King king = getKing(color);
+        Cell kingParent = (Cell)king.getParent();
+        int king_l = GridPane.getColumnIndex(kingParent);
+        int king_n = GridPane.getRowIndex(kingParent);
+		boolean isKingUnderAttack = false;
+
+        Cell enemyParent = null;
+        int enemyCell_n = 0;
+        int enemyCell_l = 0;
+        List<Move> possibleEnemyMoves = null;
+
+        for(Figure f : this.getAllFigures()){
+            if(!f.getColor().equals(color)){
+                enemyParent = (Cell)f.getParent();
+                enemyCell_l = GridPane.getColumnIndex(enemyParent);
+                enemyCell_n = GridPane.getRowIndex(enemyParent);
+                possibleEnemyMoves = f.nextMoves(enemyCell_l, enemyCell_n);
+
+                for(Move move: possibleEnemyMoves){
+                    if(move.getEnd_l() == king_l && move.getEnd_n() == king_n){
+						isKingUnderAttack = true;
+                        break;
+                    }
+                }
+
+            }
+        }
+		return isKingUnderAttack;
+	}
+
+    public boolean isKingUnderAttack(String color, Cell previousCell,Cell newCell, Figure f){
+        if(GridPane.getColumnIndex(previousCell) == GridPane.getColumnIndex(newCell)
+                && GridPane.getRowIndex(previousCell) == GridPane.getRowIndex(newCell)){
+            return isKingUnderAttack(color);
+        }else {
+            Figure previousCellFigure = null;
+
+            //make invisible move
+            if (newCell.hasFigure()) {
+                previousCellFigure = newCell.getFigure();
+                newCell.getChildren().clear();
+                allFigures.remove(previousCellFigure);
+            }
+            previousCell.getChildren().clear();
+            newCell.getChildren().add(f);
+
+            //check is our king under attack after invisible move
+
+			boolean isKingUnderAttack = isKingUnderAttack(color);
+
+            //roll back previous move
+            previousCell.getChildren().clear();
+            previousCell.getChildren().add(f);
+            newCell.getChildren().clear();
+
+            if (previousCellFigure != null) {
+                newCell.getChildren().add(previousCellFigure);
+                allFigures.add(previousCellFigure);
+            }
+            System.out.println("Is under Attack: " + isKingUnderAttack);
+			return isKingUnderAttack;
+        }
+    }
+
+    public boolean isCheckMate(String color){
+		King king = getKing(color);
+
+		Cell figureParent;
+		int l;
+		int n;
+		List<Move> moves;
+		List<Figure> allFiguresCopy = new ArrayList<>(allFigures);
+
+		if(isKingUnderAttack(color)){
+			if(king.hasSafeMove()){
+				//if king have safe move then game go on
+				return false;
+			}else{
+				for(Figure f : allFiguresCopy){
+					if(!(f instanceof King) && f.getColor().equals(color)){
+						figureParent = (Cell)f.getParent();
+						l = GridPane.getColumnIndex(figureParent);
+						n = GridPane.getRowIndex(figureParent);
+						moves = f.nextMoves(l, n);
+						for(Move move : moves){
+							//if figure can protect king then game go on
+							if(!isKingUnderAttack(color, getCell(l,n),
+									getCell(move.getEnd_l(), move.getEnd_n()), f))
+								return false;
+						}
+					}
+				}
+				return true;
+			}
+		}
+        return false;
+    }
+
+
 }
