@@ -186,6 +186,8 @@ public class GameManager {
 		this.allFigures.add(f);
 		c.getChildren().add(f);
 
+		PlayerManager.getInstance().setTimeLabel(((MainController)observer).getTimerLabel());
+
 		//attach observer
 		for(Node n : board.getChildren()){
 			c = (Cell)n;
@@ -194,6 +196,7 @@ public class GameManager {
 			
 			c.attachObserver(observer);
 			c.attachObserver(PlayerManager.getInstance());
+			c.attachObserver(SoundManager.getInstance());
 		}
 	}
 

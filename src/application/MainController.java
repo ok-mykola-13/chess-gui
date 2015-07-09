@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
@@ -30,6 +31,9 @@ public class MainController implements Initializable, IObserver{
 
 	@FXML
 	private MenuItem newHumanGameItem;
+
+	@FXML
+	private Label timerLabel;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -131,4 +135,8 @@ public class MainController implements Initializable, IObserver{
         else
             outputTextAra.setText(outputTextAra.getText() + "\n" + message);
     }
+
+	public Label getTimerLabel(){
+		return timerLabel;
+	}
 }

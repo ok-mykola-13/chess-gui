@@ -5,14 +5,20 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Label;
 import javafx.util.Duration;
 
 
 public class PlayerManager implements IObserver{
 
+    public static final int TIME_FOR_MOVE = 30;
+
+    private int time;
     private static PlayerManager instance = null;
     private Timeline tenSecondsWonder;
+    private Label timeLabel;
 
+    private String currentPlayer;
     private boolean timeStarted;
 
     public static PlayerManager getInstance(){
@@ -23,19 +29,23 @@ public class PlayerManager implements IObserver{
     }
 
     private String currentPlayer;
-
+    
     public PlayerManager(){
         this.currentPlayer = "white";
+        this.time = 0;
 
         //initialize timer for fast chess
-        //time duration 20 seconds
-        tenSecondsWonder = new Timeline(new KeyFrame(Duration.seconds(20),
+        tenSecondsWonder = new Timeline(new KeyFrame(Duration.seconds(1),
                 new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if(GameManager.getInstance().getSelectedFigure() != null)
-                    GameManager.getInstance().getSelectedFigure().diselect();
-                changePlayer();
+                time++;
+                if(time >= TIME_FOR_MOVE) {
+                    if (GameManager.getInstance().getSelectedFigure() != null)
+                        GameManager.getInstance().getSelectedFigure().diselect();
+                    changePlayer();
+                }
+                showCurrentTime();
             }
         }));
         tenSecondsWonder.setCycleCount(Timeline.INDEFINITE);
@@ -56,7 +66,6 @@ public class PlayerManager implements IObserver{
     public void changePlayer(){
         this.currentPlayer = this.currentPlayer.equals("white") ? "black" : "white";
         
-        
         GameManager gm = GameManager.getInstance();
         if(this.currentPlayer.equals("white") && 
         		gm.isGameWithComputer()){
@@ -65,6 +74,17 @@ public class PlayerManager implements IObserver{
         	changePlayer();
         }
         
+        time = 0;
+        showCurrentTime();
+    }
+
+    public void showCurrentTime(){
+        String timeString = String.format(currentPlayer + " 00:%02d", 30 - time);
+        timeLabel.setText(timeString);
+    }
+
+    public void setTimeLabel(Label timeLabel){
+        this.timeLabel = timeLabel;
     }
 
     public void startTime(){

@@ -58,6 +58,7 @@
             </GridPane>
             <VBox prefHeight="571.0" prefWidth="408.0">
                <children>
+                  <Label fx:id="timerLabel" text="00:00" />
                   <Label text="Output" />
                   <TextArea fx:id="outputTextAra" prefHeight="431.0" prefWidth="230.0" />
                </children>
