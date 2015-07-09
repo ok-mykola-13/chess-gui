@@ -31,7 +31,7 @@ public class Pawn extends Figure {
 			// this is a white one pawn
 			
 			// two steps forward(only on start position)
-			if (this.startPos
+			if (this.startPos && GameManager.getInstance().isCellFree(current_l, current_n +1)
 					&& GameManager.getInstance().isCellFree(current_l, current_n + 2)) {
 				Move m = new Move(current_l, current_n, current_l, current_n + 2);
 				moves.add(m);
@@ -59,7 +59,7 @@ public class Pawn extends Figure {
 		} else {
 			// Black one
 			// two steps forward (only on start position)
-			if (this.startPos
+			if (this.startPos && GameManager.getInstance().isCellFree(current_l, current_n -1)
 					&& GameManager.getInstance().isCellFree(current_l,current_n -2)) {
 				Move m = new Move(current_l, current_n, current_l,current_n - 2);
 				moves.add(m);
