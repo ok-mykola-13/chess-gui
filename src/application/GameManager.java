@@ -14,14 +14,19 @@ import chess.components.figures.Knight;
 import chess.components.figures.Pawn;
 import chess.components.figures.Queen;
 import chess.components.figures.Rook;
+import engineadapter.EngineAdapter;
 import javafx.scene.Node;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 
 public class GameManager {
 	
 	private static GameManager instance = null;
 	
-	private GameManager(){}
+	private GameManager(){
+		// load C++ library for JNI
+		System.loadLibrary("ChessLib");
+	}
 	
 	public static GameManager getInstance(){
 		if(instance == null)
@@ -31,6 +36,7 @@ public class GameManager {
 	}
 	
 	private GridPane board;
+	private TextArea log;
 	
 	private Figure selectedFigure;
 	private List<Figure> allFigures = null;
@@ -53,6 +59,9 @@ public class GameManager {
 
 	public void setBoard(GridPane board){
 		this.board = board;
+	}
+	public void setLog(TextArea t){
+		this.log = t;
 	}
 	
 	public boolean isCellFree(int l, int n){
@@ -180,6 +189,9 @@ public class GameManager {
 		//attach observer
 		for(Node n : board.getChildren()){
 			c = (Cell)n;
+			
+			c.clearObservers();
+			
 			c.attachObserver(observer);
 			c.attachObserver(PlayerManager.getInstance());
 		}
@@ -199,6 +211,92 @@ public class GameManager {
 		}
 			
 	}
+	
+	/*********************************************************************************
+	* Engine communication section
+	*/
+	private boolean gameWithComputer = false;
+	public void setGameWithComputer(){
+		this.gameWithComputer = true;
+	}
+	public void unsetGameWithComputer(){
+		this.gameWithComputer = false;
+	}
+	public boolean isGameWithComputer(){
+		return this.gameWithComputer;
+	}
+	private EngineAdapter ea = null;
+	
+	public boolean engineNewGame(){
+		boolean result = true;
+		
+		//TODO: stop prev game
+		
+		//TODO: check if engine is started
+		
+		ea = new EngineAdapter();
+		String s;
+		
+		// TODO: pass string from GUI. Allow user to select location of an engine
+		s = ea.start("/home/mykola/chess/stockfish-6-linux/Linux/stockfish_6_x64");
+		System.out.println(s);
+		
+		ea.write("uci\n");
+		System.out.println(ea.read());
+		
+		ea.write("isready\n");
+		System.out.println(ea.read());
+		
+		ea.write("ucinewgame\n");
+		
+		return result;
+	}
+	
+	public Move engineNextMove(String allMoves){
+		String s;
+		String move;
+		
+		if(!allMoves.isEmpty()){
+			ea.write("position startpos moves " + allMoves + "\n");
+		}
+		
+		ea.write("go\n");
+		s = "";
+		while(!s.contains("bestmove")){
+			s = ea.read();
+			System.out.println(s);
+		}
+		
+		// parse next move
+		int start = s.indexOf("bestmove")+9;
+		int end = s.indexOf(" ", start);
+		move = s.substring(start, end);
+		
+		System.out.println(move);
+		
+		Move m = new Move();
+		m.readAlgebraicNotation(move);
+		return m;
+	}
+	
+	public void engineMove(Move m){
+		Cell c1 = (Cell)Utils.getNodeFromGridPane(board, m.getStart_l(), m.getStart_n());
+		Cell c2 = (Cell)Utils.getNodeFromGridPane(board, m.getEnd_l(), m.getEnd_n());
+		
+		Figure f = c1.getFigure();
+		f.select();
+		c2.moveFigureToHere();
+	}
+	
+	public String getAllMoves(){
+		String s = log.getText();
+		s = s.replace("\n", " ");
+		System.out.println("All moves: " + s);
+		return s;
+	}
+	
+		
+	/*********************************************************************************/
 
     //-------------------------------------------------------------
 	//if left Rook change position then castling is impossible

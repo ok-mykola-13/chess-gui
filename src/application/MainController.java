@@ -36,6 +36,7 @@ public class MainController implements Initializable, IObserver{
 		
 		// initialize singleton GameManager---------------------------------------
 		GameManager.getInstance().setBoard(gridBoard);
+		GameManager.getInstance().setLog(outputTextAra);
 
 
 		//initialize menu item----------------------------------------------
@@ -53,13 +54,25 @@ public class MainController implements Initializable, IObserver{
 				GameManager.getInstance().endGame();
 				outputTextAra.setText("");
 				GameManager.getInstance().newGame(iObserver);
+				GameManager.getInstance().unsetGameWithComputer();
+				
+				//TODO: not fully cleared resources (multiple lines in output, incorrect turns)
 			}
 		});
 
 		newComputerGameItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				//TODO: chess engine connect;
+				GameManager gm = GameManager.getInstance();
+
+				gm.endGame();
+				outputTextAra.setText("");
+				gm.newGame(iObserver);
+				
+				gm.setGameWithComputer();
+				gm.engineNewGame();
+				
+				gm.engineMove(gm.engineNextMove(""));
 			}
 		});
 		

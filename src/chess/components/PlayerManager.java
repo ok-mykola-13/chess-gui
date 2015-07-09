@@ -22,7 +22,6 @@ public class PlayerManager implements IObserver{
         return instance;
     }
 
-
     private String currentPlayer;
 
     public PlayerManager(){
@@ -56,6 +55,16 @@ public class PlayerManager implements IObserver{
 
     public void changePlayer(){
         this.currentPlayer = this.currentPlayer.equals("white") ? "black" : "white";
+        
+        
+        GameManager gm = GameManager.getInstance();
+        if(this.currentPlayer.equals("white") && 
+        		gm.isGameWithComputer()){
+        	
+        	gm.engineMove(gm.engineNextMove(gm.getAllMoves()));
+        	changePlayer();
+        }
+        
     }
 
     public void startTime(){

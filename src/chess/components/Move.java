@@ -8,6 +8,8 @@ public class Move {
 	private int end_n;
 	private int end_l;
 	
+	public Move(){}
+	
 	public Move(int start_l,int start_n) {
 		this.start_n = start_n;
 		this.start_l = start_l;
@@ -58,12 +60,25 @@ public class Move {
 		 * 		a - 97
 		 * 		A - 65
 		 */
-		char[] c1 = Character.toChars(97 + start_l);
-		char[] c2 = Character.toChars(97 + end_l);
+		char[] c1 = Character.toChars(97 + (7-start_l));
+		char[] c2 = Character.toChars(97 + (7-end_l));
 		
-		String s = c1[0] + Integer.toString(start_n) +
-					c2[0] + Integer.toString(end_n);
+		String s = c1[0] + Integer.toString(start_n+1) +
+					c2[0] + Integer.toString(end_n+1);
 		
 		return s;
+	}
+	
+	public void readAlgebraicNotation(String s){
+		/*
+		 * anci table
+		 * 		a - 97
+		 * 		A - 65
+		 */
+		
+		this.start_l = 7 - ((int)s.charAt(0)-97);
+		this.start_n = Integer.parseInt(s.substring(1, 2)) - 1;
+		this.end_l = 7 - ((int)s.charAt(2)-97);
+		this.end_n = Integer.parseInt(s.substring(3, 4)) - 1;		
 	}
 }

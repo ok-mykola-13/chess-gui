@@ -147,12 +147,12 @@ public class Cell extends StackPane implements ISubject{
 
             if(GameManager.getInstance().isKingUnderAttack(enemyColor)) {
                 GameManager.getInstance().getKing(enemyColor).setIsUnderAttack(true);
-                message = message + " : " + enemyColor + "Check!!!";
+                message = message + " : " + enemyColor + " Check!!!";
             }else{
                 GameManager.getInstance().getKing(enemyColor).setIsUnderAttack(false);
             }
             if(GameManager.getInstance().isCheckMate(enemyColor))
-                message = message + " : " + "Mate!!!";
+                message = message + " : " + " Mate!!!";
             notifyObservers(message);
 
             //------------------------------------------------------
@@ -175,5 +175,9 @@ public class Cell extends StackPane implements ISubject{
         for (IObserver iObserver : observers){
             iObserver.update(message);
         }
+	}
+	
+	public void clearObservers(){
+		this.observers.clear();
 	}
 }
