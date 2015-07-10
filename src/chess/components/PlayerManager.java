@@ -27,8 +27,6 @@ public class PlayerManager implements IObserver{
 
         return instance;
     }
-
-    private String currentPlayer;
     
     public PlayerManager(){
         this.currentPlayer = "white";
@@ -64,18 +62,24 @@ public class PlayerManager implements IObserver{
     }
 
     public void changePlayer(){
-        this.currentPlayer = this.currentPlayer.equals("white") ? "black" : "white";
-        
         GameManager gm = GameManager.getInstance();
-        if(this.currentPlayer.equals("white") && 
+        this.currentPlayer = this.currentPlayer.equals("white") ? "black" : "white";
+        if(this.currentPlayer.equals("white") &&
         		gm.isGameWithComputer()){
-        	
-        	gm.engineMove(gm.engineNextMove(gm.getAllMoves()));
-        	changePlayer();
+            System.out.println("computer move");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            gm.engineMove(gm.engineNextMove(gm.getAllMoves()));
+        	//changePlayer();
         }
-        
+
         time = 0;
         showCurrentTime();
+        System.out.println(currentPlayer);
+        System.out.println(gm.isGameWithComputer());
     }
 
     public void showCurrentTime(){
@@ -95,6 +99,13 @@ public class PlayerManager implements IObserver{
     public void stopTime(){
         timeStarted = false;
         tenSecondsWonder.stop();
+    }
+
+    public void resetGame(){
+        this.currentPlayer = "white";
+        time = 0;
+        timeStarted = false;
+
     }
 
     public boolean isTimeStarted() {
