@@ -112,37 +112,38 @@ public class Cell extends StackPane implements ISubject{
 			
 			this.getChildren().add(f);
 
-            //Castling-------------------------------------
-            if(f instanceof King){
-                if(Math.abs(currentMove.getEnd_l() - currentMove.getStart_l()) > 1) {
-                    Cell cell = null;
-                    Rook rook = null;
 
-                    if (currentMove.getEnd_l() - currentMove.getStart_l() > 1)
-                        rook = GameManager.getInstance().getRightRook(currentMove.getStart_l(),
-                                currentMove.getStart_n());
-                    else
-                        rook = GameManager.getInstance().getLeftRook(currentMove.getStart_l(),
-                                currentMove.getStart_n());
 
-                    cell = (Cell) rook.getParent();
-                    rook.setStartPos(false);
-                    cell.makeNotAvailable();
-                    cell.getChildren().clear();
-                    if (currentMove.getEnd_l() - currentMove.getStart_l() > 1)
-                        cell = GameManager.getInstance().getCell(currentMove.getEnd_l() - 1,
-                                currentMove.getEnd_n());
-                    else
-                        cell = GameManager.getInstance().getCell(currentMove.getEnd_l() + 1,
-                                currentMove.getEnd_n());
-                    cell.getChildren().add(rook);
-                }
-            }
-            //-----------------------------------------------
+			//Castling-------------------------------------
+			if(f instanceof King){
+				if(Math.abs(currentMove.getEnd_l() - currentMove.getStart_l()) > 1) {
+					Cell cell = null;
+					Rook rook = null;
 
-            //Text Area notification;
-            String message = currentMove.generateAlgebraicNotation();
+					if (currentMove.getEnd_l() - currentMove.getStart_l() > 1)
+						rook = GameManager.getInstance().getRightRook(currentMove.getStart_l(),
+								currentMove.getStart_n());
+					else
+						rook = GameManager.getInstance().getLeftRook(currentMove.getStart_l(),
+								currentMove.getStart_n());
 
+					cell = (Cell) rook.getParent();
+					rook.setStartPos(false);
+					cell.makeNotAvailable();
+					cell.getChildren().clear();
+					if (currentMove.getEnd_l() - currentMove.getStart_l() > 1)
+						cell = GameManager.getInstance().getCell(currentMove.getEnd_l() - 1,
+								currentMove.getEnd_n());
+					else
+						cell = GameManager.getInstance().getCell(currentMove.getEnd_l() + 1,
+								currentMove.getEnd_n());
+					cell.getChildren().add(rook);
+				}
+			}
+			//-----------------------------------------------
+
+			//Text Area notification;
+			String message = currentMove.generateAlgebraicNotation();
             String enemyColor = f.getColor().equals("white") ? "black" : "white";
 
             if(GameManager.getInstance().isKingUnderAttack(enemyColor)) {
@@ -153,10 +154,11 @@ public class Cell extends StackPane implements ISubject{
             }
             if(GameManager.getInstance().isCheckMate(enemyColor))
                 message = message + " : " + " Mate!!!";
+			f.diselect();
             notifyObservers(message);
 
             //------------------------------------------------------
-			f.diselect();
+
 		}
 	}
 
