@@ -195,8 +195,8 @@ public class GameManager {
 			c.clearObservers();
 			
 			c.attachObserver(observer);
-			c.attachObserver(PlayerManager.getInstance());
 			c.attachObserver(SoundManager.getInstance());
+			c.attachObserver(PlayerManager.getInstance());
 		}
 	}
 
@@ -205,6 +205,7 @@ public class GameManager {
 		selectedFigure = null;
 		allFigures.clear();
 		clearBoard();
+		PlayerManager.getInstance().resetGame();
 	}
 	
 	public void clearBoard(){
@@ -241,7 +242,7 @@ public class GameManager {
 		String s;
 		
 		// TODO: pass string from GUI. Allow user to select location of an engine
-		s = ea.start("/home/mykola/chess/stockfish-6-linux/Linux/stockfish_6_x64");
+		s = ea.start("stockfish");
 		System.out.println(s);
 		
 		ea.write("uci\n");
@@ -294,6 +295,10 @@ public class GameManager {
 	public String getAllMoves(){
 		String s = log.getText();
 		s = s.replace("\n", " ");
+		s = s.replace(":", "");
+		s = s.replace("white", "");
+		s = s.replace("black", "");
+		s = s.replace("Check!!!", "");
 		System.out.println("All moves: " + s);
 		return s;
 	}
@@ -327,13 +332,13 @@ public class GameManager {
             return null;
     }
 
-    public Rook getRightRook(int king_l, int king_n){
-        Cell cell = getCell(king_l + 4, king_n);
-        if(cell.hasFigure() && cell.getFigure() instanceof Rook)
-            return (Rook)cell.getFigure();
-        else
-            return null;
-    }
+	public Rook getRightRook(int king_l, int king_n){
+		Cell cell = getCell(king_l + 4, king_n);
+		if(cell.hasFigure() && cell.getFigure() instanceof Rook)
+			return (Rook)cell.getFigure();
+		else
+			return null;
+	}
 
     public Cell getCell(int l, int n){
         Cell cell = null;
